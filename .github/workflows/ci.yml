@@ -1,9 +1,9 @@
 name: CI
 
-# TODO(step-6a): trigger the workflow on push targeting the `main` branch.
 on:
-    push:
-        branches: [main]
+  push:
+    branches:
+      - main
 
 env:
   IMAGE_NAME: workshop-app
@@ -20,19 +20,18 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      # TODO(step-6b): build the image locally with tag $IMAGE_NAME:${{ github.sha }}.
       - name: Build image
-        run: docker build -t $IMAGE_NAME:${{ github.sha }} ./app
+        run: docker build -f ./app/Dockerfile -t $IMAGE_NAME:${{ github.sha }} ./app
 
       # scan the freshly built image with Trivy. Fail the job on CRITICAL.
       - name: Scan image with Trivy
         uses: aquasecurity/trivy-action@0.35.0
         with:
-            scan-type: image
-            image-ref: ${{ env.IMAGE_NAME }}:${{ github.sha }}
-            severity: CRITICAL
-            exit-code: '1'
-            ignore-unfixed: true
+          scan-type: image
+          image-ref: ${{ env.IMAGE_NAME }}:${{ github.sha }}
+          severity: CRITICAL
+          exit-code: '1'
+          ignore-unfixed: true
 
       # log in to Docker Hub using DOCKERHUB_USERNAME and DOCKERHUB_TOKEN secrets.
       - name: Log in to Docker Hub
@@ -41,7 +40,6 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      # TODO(step-6e): tag and push the image as both :latest and :${{ github.sha }}.
       - name: Tag and push
         run: |
           FULL=${{ secrets.DOCKERHUB_USERNAME }}/$IMAGE_NAME
